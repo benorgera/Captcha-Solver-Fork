@@ -236,7 +236,7 @@ module.exports = class Harvester{
     }
     /**
      * Set the maximum amount of captchas that can be displayed at once in the browser
-     * @param limit
+     * @param {Number} limit
      */
     setBrowserDisplayedCaptchasLimit(limit = 30){
         this._sendWebSocketClients(Event.WebSocket.SetBrowserDisplayedCaptchasLimit, {
