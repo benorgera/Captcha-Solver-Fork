@@ -1,4 +1,4 @@
 /node_modules
-/src/.secret
+/.secret
 /package-lock.json
 /.idea

@@ -7,6 +7,7 @@ const WebSocket = require('ws');
 const net = require('net');
 const Secret = require('./Secret');
 const Constants = require('./Constants');
+const puppeteer = require('puppeteer');
 
 const Event = Constants.Event;
 
@@ -33,6 +34,7 @@ module.exports = class Harvester{
         this.tcpServer = null;
         this.tcpSocketClients = [];
 
+
         this.openBrowser = openBrowser;
         this.firstCaptchaRequested = false;
 
@@ -42,28 +44,27 @@ module.exports = class Harvester{
         app.use(bodyParser.urlencoded({
             extended: true
         }));
-        app.get('/captcha/:captchaCallbackIndex/:siteKey',
-            (request, response) =>{
-                const {captchaCallbackIndex, siteKey} = request.params;
-                response.send('' +
-                    '<html>' +
-                    '   <head>' +
-                    '       <title>reCAPTCHA</title>' +
-                    '       <script src="https://www.google.com/recaptcha/api.js" async defer></script>' +
-                    '   </head>' +
-                    '   <body>' +
-                    '       <form action="/captcha" method="POST">' +
-                    '       <input type="hidden" name="captchaCallbackIndex" value="' + captchaCallbackIndex + '" />' +
-                    '       <div class="g-recaptcha" data-sitekey="' + siteKey + '">' +
-                    '       </div>' +
-                    '       <br/>' +
-                    '       <input type="submit" value="Submit">' +
-                    '       </form>' +
-                    '   </body>' +
-                    '</html>'
-                );
-            });
-        app.post('/captcha', (request, response) =>{
+        app.get('/captcha/:captchaCallbackIndex/:siteKey/:host', (request, response)=>{
+            const {captchaCallbackIndex, siteKey, host} = request.params;
+            response.send('' +
+                '<html>' +
+                '   <head>' +
+                '       <title>reCAPTCHA</title>' +
+                '       <script src="https://www.google.com/recaptcha/api.js" async defer></script>' +
+                '   </head>' +
+                '   <body>' +
+                '       <form action="/captcha" method="POST">' +
+                '       <input type="hidden" name="captchaCallbackIndex" value="' + captchaCallbackIndex + '" />' +
+                '       <div class="g-recaptcha" data-sitekey="' + siteKey + '">' +
+                '       </div>' +
+                '       <br/>' +
+                '       <input type="submit" value="Submit">' +
+                '       </form>' +
+                '   </body>' +
+                '</html>'
+            );
+        });
+        app.post('/captcha', (request, response)=>{
             const captchaCallbackIndex = parseInt(request.body['captchaCallbackIndex']);
             const captchaCallback = this.captchaCallbacks[captchaCallbackIndex];
             captchaCallback(request.body['g-recaptcha-response']);
@@ -163,16 +164,12 @@ module.exports = class Harvester{
                 }
             }
         });
-        this.webSocketServer.on('message', (data) =>{
+        this.webSocketServer.on('message', (data)=>{
             try{
                 const json = JSON.parse(data);
                 const data = json.data;
                 switch(json.event){
-                    /*case Event.CaptchaSubmittedEvent:
-                        this._sendWebSocketClients(Event.RemoveCaptchaEvent, {
-                            captchaCallbackIndex: data.captchaCallbackIndex
-                        });
-                        break;*/
+
                 }
             }catch(error){
                 console.log('Could not parse WebSocket data: ' + error.message);
@@ -226,7 +223,7 @@ module.exports = class Harvester{
         }
         this._sendWebSocketClients(Event.WebSocket.AddCaptchaEvent, {
             captchaCallbackIndex: this.captchaCallbackIndex,
-            url: 'http://localapi.' + host + ':' + this.httpPort + '/captcha/' + this.captchaCallbackIndex + '/' + siteKey,
+            url: 'http://localapi.' + host + ':' + this.httpPort + '/captcha/' + this.captchaCallbackIndex + '/' + siteKey + '/' + host,
             host: host,
             prioritise: prioritise
         });
