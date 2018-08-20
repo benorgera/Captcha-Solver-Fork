@@ -53,13 +53,19 @@ module.exports = class Harvester{
                 '       <script src="https://www.google.com/recaptcha/api.js" async defer></script>' +
                 '   </head>' +
                 '   <body>' +
-                '       <form action="/captcha" method="POST">' +
+                '       <form id="yeet" action="/captcha" method="POST">' +
                 '       <input type="hidden" name="captchaCallbackIndex" value="' + captchaCallbackIndex + '" />' +
-                '       <div class="g-recaptcha" data-sitekey="' + siteKey + '">' +
+                '       <div class="g-recaptcha" data-sitekey="' + siteKey + '" ' + 
+                '         data-size="invisible" data-callback="submit_form">' +
                 '       </div>' +
                 '       <br/>' +
                 '       <input type="submit" value="Submit">' +
                 '       </form>' +
+                '       <script type="text/javascript">' +
+                '           console.log("yeahhhh");' +
+                '           var submit_form = () => document.getElementById("yeet").submit();' +
+                '           document.addEventListener("DOMContentLoaded", () => setTimeout(() => grecaptcha.execute(), Math.floor(Math.random()*150 + 150)));' +
+                '       </script>' +
                 '   </body>' +
                 '</html>'
             );
